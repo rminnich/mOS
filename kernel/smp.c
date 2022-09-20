@@ -27,6 +27,7 @@
 #include <linux/jump_label.h>
 
 #include <trace/events/ipi.h>
+#include <linux/moduleparam.h>
 
 #include "smpboot.h"
 #include "sched/smp.h"
