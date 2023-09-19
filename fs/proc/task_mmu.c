@@ -648,7 +648,8 @@ static void smaps_lwk_pud_entry(pud_t *pud, unsigned long addr,
 	page = pud_page(*pud);
 	if (PageAnon(page))
 		mss->anonymous_thp += HPAGE_PUD_SIZE;
-	smaps_account(mss, page, true, pud_young(*pud), pud_dirty(*pud), locked, false);
+	panic(__func__);
+	//smaps_account(mss, page, true, pud_young(*pud), pud_dirty(*pud), locked, false);
 }
 
 static void smaps_lwk_pmd_entry(pmd_t *pmd, unsigned long addr,
@@ -677,10 +678,13 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 #ifdef CONFIG_MOS_LWKMEM
 	if (is_lwkvma(vma)) {
 		ptl = pmd_lock(walk->mm, pmd);
+		panic(__func__);
+#if 0
 		if (pmd_present(*pmd) && (pmd_flags(*pmd) & _PAGE_PSE)) {
 			smaps_lwk_pmd_entry(pmd, addr, walk);
 			walk->action = ACTION_CONTINUE;
 		}
+		#endif
 		spin_unlock(ptl);
 		goto out;
 	}
@@ -716,10 +720,13 @@ static int smaps_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 #ifdef CONFIG_MOS_LWKMEM
 	if (is_lwkvma(walk->vma)) {
 		ptl = pud_lock(walk->mm, pud);
+		panic(__func__);
+#if 0
 		if (pud_present(*pud) && (pud_flags(*pud) & _PAGE_PSE)) {
 			smaps_lwk_pud_entry(pud, addr, walk);
 			walk->action = ACTION_CONTINUE;
 		}
+#endif
 		spin_unlock(ptl);
 	}
 #endif
