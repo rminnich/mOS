@@ -58,3 +58,26 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
 {
   panic("vmemmap_free");
 }
+
+/*
+ * When an LWK process is launched, this function will be called with a cpumask
+ * representing the CPUs reserved for the process. Polling will be disabled
+ * for correctable machine check events and correctable machine check interrupts
+ * will be disabled.
+ */
+void mce_lwkprocess_begin(cpumask_t *lwkcpus, unsigned int threshold,
+			  bool poll_enable)
+{
+}
+/*
+ * When an LWK process exits, this function will be called with a cpumask
+ * representing the CPUs reserved for the process. The state of machine check
+ * polling, correctable machine check interrupt enablement and thresholding will
+ * be restored. An immediate poll of the machine check banks to flush out any
+ * events that may have accumulated during the process execution will be
+ * performed.
+ */
+void mce_lwkprocess_end(cpumask_t *lwkcpus, bool reset_threshold,
+		bool reenable_poll)
+{
+}
