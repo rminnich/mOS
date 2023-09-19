@@ -618,6 +618,66 @@ static unsigned long allocate_memory_from_linux(int nid, unsigned long size)
 	while (nr_pages--)
 		lwkpage_init(page++);
 
+		curr = kmalloc(sizeof(struct lwkmem_granule), GFP_KERNEL);
+		if (!curr) {
+			rc = -ENOMEM;
+			mos_ras(MOS_LWKCTL_FAILURE,
+				"Node %d: no free mem to allocate a granule",
+				nid);
+			break;
+		}
+#ifdef CONFIG_X86_64	 
+		curr->base = pfn_to_kaddr(pfn);
+#else
+		panic("need pfn_to_kaddr");
+#endif
+		curr->owner = -1;
+		curr->length = block_size;
+		list_add_tail(&curr->list_designated, &granules);
+		total_size += block_size;
+		pr_info(MFMT, nid, "Free range", __pa(curr->base),
+			__pa(curr->base) + block_size - 1, pfn,
+			pfn + bytes_to_pages(block_size) - 1,
+			bytes_to_pages(block_size));
+
+		start_pfn = pfn_next;
+	}
+	spin_unlock_irqrestore(&zone_movable->lock, flags);
+
+	/* Skip hotplugging memory if something went wrong during the search */
+	if (rc)
+		goto out;
+
+	/* Offline pages and add the granule to the requested list_head */
+	list_for_each_entry_safe(curr, next, &granules, list_designated) {
+		start_pfn = kaddr_to_pfn(curr->base);
+		nr_pages = bytes_to_pages(curr->length);
+		pr_info(MFMT, nid, "Offlining", __pa(curr->base),
+			__pa(curr->base) + curr->length - 1, start_pfn,
+			start_pfn + nr_pages - 1, nr_pages);
+		mblock = find_memory_block(pfn_to_section_nr(start_pfn));
+                zone = zone_for_pfn_range(MMOP_ONLINE_MOVABLE, nid, mblock->group,
+                                          start_pfn, nr_pages);
+		do {
+			/* We don't need a timeout here. Linux kernel 4.15
+			 * onwards offline_pages() doesn't implement timeout
+			 * anymore. It repeats until it sees an error -EINTR,
+			 * -EBUSY or -ENOMEM based on the error condition.
+			 * So we can safely retry here upon -EAGAIN which is
+			 * the correct behavior even with the future rebases.
+			 */
+			rc = offline_pages(start_pfn, nr_pages, zone, mblock->group);
+		} while (rc == -EAGAIN);
+
+		if (rc) {
+			mos_ras(MOS_LWKCTL_FAILURE,
+				"Node %d: hotplug error pfn %ld nr %ld rc %d",
+				nid, start_pfn, nr_pages, rc);
+		} else {
+			while (nr_pages--) {
+				lwkpage_init(pfn_to_page(start_pfn));
+				start_pfn++;
+			}
 #ifdef DEBUG_MEMORY_CLEARING
 	lwkmem_set_granule_memory(curr);
 #endif
