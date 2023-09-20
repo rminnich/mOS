@@ -14,6 +14,9 @@
 
 #ifndef __LWKCTL_H__
 
+// oh, the hell with it.
+#define PAGE_SIZE 4096
+
 #include <stdbool.h>
 #include "../include/mos_cpuset.h"
 #include "../include/mos_gpuset.h"

@@ -12,6 +12,10 @@
  * more details.
  */
 
+// oh, the hell with it.
+#define PAGE_SIZE 4096
+#define PAGE_MASK 0xfff
+
 #define HAVE_DECL_CPU_ALLOC 1
 #define _GNU_SOURCE
 #include <getopt.h>

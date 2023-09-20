@@ -413,6 +413,7 @@ static void mos_init_cpu_map(void)
 
 	/* Read /proc/cpuinfo to determine the CPU family and model */
 
+	if (0) {
 	if (!(f = fopen(CPUINFO, "r")))
 		yod_abort(-1, "Could not read %s", CPUINFO);
 	while (!(found_family && found_model)) {
@@ -431,6 +432,7 @@ static void mos_init_cpu_map(void)
 
 	if (!found_family || !found_model)
 		yod_abort(-1, "Could not parse CPU model (%d/%d)", family, model);
+	}
 
 	/* Read the /sys/devices/system/cpu/online file to determine
 	 * how many CPUs are actually active for this system.
@@ -456,7 +458,7 @@ static void mos_init_cpu_map(void)
 	 * holds the level 2 data.  Note that no such index is found, we will
 	 * abort.
 	 */
-	for (l2_index = 0; ; l2_index++) {
+	for (l2_index = 0; 0; l2_index++) {
 
 		char fname[256];
 
