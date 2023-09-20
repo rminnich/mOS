@@ -1,4 +1,4 @@
-${CROSS_COMPILE}cc -o lwkctl/lwkctl \
+${CROSS_COMPILE}gcc -static -o lwkctl/lwkctl \
 lib/mos_cpuset.c \
 libmos/mossyscalls.c \
 libmos/uti.c \
@@ -8,14 +8,14 @@ lwkctl/lwkctl_irq.c \
 lwkctl/lwkctl_sysfs.c \
 
 
-${CROSS_COMPILE}cc -o lwkreset/lwkreset \
+${CROSS_COMPILE}gcc -static -o lwkreset/lwkreset \
 lib/mos_cpuset.c \
 libmos/mossyscalls.c \
 libmos/uti.c \
 xpmem/libxpmem.c \
 lwkreset/lwkreset.c \
 
-${CROSS_COMPILE}cc -o yod/yod \
+${CROSS_COMPILE}gcc -static -o yod/yod \
 lib/mos_cpuset.c \
 libmos/mossyscalls.c \
 libmos/uti.c \
