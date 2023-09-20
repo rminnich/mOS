@@ -16,6 +16,8 @@
 #include <linux/mos.h>
 #include <trace/events/lwkmem.h>
 
+#include "../../mm/internal.h"
+
 /* Private headers */
 #include "lwk_mm_private.h"
 
@@ -206,7 +208,7 @@ void lwk_mm_split_pud_locked(struct vm_area_struct *vma, pud_t *pud,
 
 	for (i = 0, addr = start; i < npmds; i++, addr += PMD_SIZE) {
 		clear_compound_head(page);
-		set_compound_order(page, order);
+		folio_set_order(page_folio(page), order);
 		__SetPageHead(page);
 		page->mapping = mapping;
 		page->index = linear_page_index(vma, addr);

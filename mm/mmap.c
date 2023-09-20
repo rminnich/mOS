@@ -249,6 +249,10 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 		 * before calling do_vma_munmap().
 		 */
 		mm->brk = brk;
+
+		if (is_lwkmem_enabled(current) && !is_lwkvmr_disabled(LWK_VMR_HEAP))
+			goto success;
+
 		if (do_vma_munmap(&vmi, brkvma, newbrk, oldbrk, &uf, true))
 			goto out;
 
@@ -263,10 +267,9 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 	 * expansion area
 	 */
 	vma_iter_init(&vmi, mm, oldbrk);
+	next = vma_find(&vmi, newbrk + PAGE_SIZE + stack_guard_gap);
 
 	if (is_lwkmem_enabled(current) && !is_lwkvmr_disabled(LWK_VMR_HEAP)) {
-		next = find_vma(mm, oldbrk);
-
 		/*
 		 * VMA corresponding to the heap already exists that overlaps
 		 * with the requested expansion.
@@ -286,7 +289,7 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 					goto out;
 				if (do_brk_flags(&vmi, next, next->vm_end,
 					newbrk - next->vm_end,
-					VM_LWK | VM_LWK_HEAP | VM_LWK_EXTRA))
+					VM_LWK | VM_LWK_HEAP | VM_LWK_EXTRA) < 0)
 					goto out;
 			}
 		} else {
@@ -297,6 +300,8 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 			if (do_brk_flags(&vmi, next, oldbrk, newbrk-oldbrk,
 				VM_LWK | VM_LWK_HEAP | VM_LWK_EXTRA) < 0)
 				goto out;
+			vma_iter_init(&vmi, mm, oldbrk);
+			next = vma_find(&vmi, newbrk);
 		}
 
 		/*
@@ -306,7 +311,7 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 		 * it's vm_end would not define the current end of heap.
 		 */
 		if (!next || !is_lwkvma(next)) {
-			LWKMEM_ERROR("Not a LWK VMA for heap");
+			LWKMEM_ERROR("0x%p is not an LWK VMA for heap", next);
 			goto out;
 		}
 		lwkmem_clear_heap(next, oldbrk, newbrk);
@@ -314,7 +319,6 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 		goto success;
 	}
 
-	next = vma_find(&vmi, newbrk + PAGE_SIZE + stack_guard_gap);
 	if (next && newbrk + PAGE_SIZE > vm_start_gap(next))
 		goto out;
 
@@ -2897,6 +2901,8 @@ cannot_expand:
 			goto free_vma;
 	} else {
 		vma_set_anonymous(vma);
+		if (is_lwkvma(vma))
+			vma_set_lwkvma(vma);
 	}
 
 	if (map_deny_write_exec(vma, vma->vm_flags)) {
@@ -3255,9 +3261,12 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	/* Until we need other flags, refuse anything except VM_EXEC. */
-	if ((flags & (~VM_EXEC)) != 0)
-		return -EINVAL;
+        /* Until we need other flags, refuse anything except VM_EXEC. */
+	if (is_lwk_process(current)) {
+		if (!(flags & VM_EXEC))
+			return -EINVAL;
+	} else if ((flags & (~VM_EXEC)) != 0)
+			return -EINVAL;
 
 	ret = check_brk_limits(addr, len);
 	if (ret)
