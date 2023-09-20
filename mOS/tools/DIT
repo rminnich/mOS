@@ -1,0 +1,28 @@
+${CROSS_COMPILE}cc -o lwkctl/lwkctl \
+lib/mos_cpuset.c \
+libmos/mossyscalls.c \
+libmos/uti.c \
+xpmem/libxpmem.c \
+lwkctl/lwkctl.c \
+lwkctl/lwkctl_irq.c \
+lwkctl/lwkctl_sysfs.c \
+
+
+${CROSS_COMPILE}cc -o lwkreset/lwkreset \
+lib/mos_cpuset.c \
+libmos/mossyscalls.c \
+libmos/uti.c \
+xpmem/libxpmem.c \
+lwkreset/lwkreset.c \
+
+${CROSS_COMPILE}cc -o yod/yod \
+lib/mos_cpuset.c \
+libmos/mossyscalls.c \
+libmos/uti.c \
+xpmem/libxpmem.c \
+yod/layout.c \
+yod/mos_plugin.c \
+yod/numa.c \
+yod/test_plugin.c \
+yod/yod.c \
+yod/yod_cpuset.c
