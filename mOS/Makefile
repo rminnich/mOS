@@ -18,4 +18,8 @@ subdir-$(CONFIG_MOS_FOR_HPC) += tools
 
 obj-$(CONFIG_MOS_FOR_HPC) += mos.o
 obj-$(CONFIG_MOS_FOR_HPC) += lwkcpu.o lwkctrl.o mosras.o
+obj-$(CONFIG_MOS_FOR_HPC) += lwkcpu.o lwkctrl.o mosras.o
 obj-$(CONFIG_MOS_LWKMEM) += lwkmem/
+ifeq ($(CONFIG_RISCV),y)
+obj-$(CONFIG_MOS_FOR_HPC) += riscv_mos.o
+endif

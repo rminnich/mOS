@@ -17,7 +17,7 @@
 obj-$(CONFIG_MOS_LWKMEM) += mm.o init.o yod_options.o pma_buddy.o
 obj-$(CONFIG_MOS_LWKMEM) += mm_mempolicy.o
 ifeq ($(CONFIG_RISCV),y)
-obj-$(CONFIG_MOS_LWKMEM) += riscv_mos.o
+obj-$(CONFIG_MOS_LWKMEM) += riscv_lwk.o
 endif
 ifeq ($(CONFIG_X86_64),y)
 obj-$(CONFIG_MOS_LWKMEM) += mm_pagetable.o
