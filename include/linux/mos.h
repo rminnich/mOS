@@ -231,7 +231,6 @@ struct mos_process_callbacks_t {
 extern int mos_register_process_callbacks(struct mos_process_callbacks_t *);
 extern int mos_unregister_process_callbacks(struct mos_process_callbacks_t *);
 
-extern int __init lwkmem_early_init(void) __attribute__((weak));
 extern int lwkmem_get(unsigned long *mem, size_t *n) __attribute__((weak));
 extern int lwkmem_reserved_get(unsigned long  *mem, size_t *n)
 	__attribute__((weak));
